@@ -1,0 +1,91 @@
+<section>
+    <!-- HTML for registration screen -->
+    <div id="poolsScreen">
+       <div id="poolConfiguration">
+        <label for="optionFencersInPool">Fencers per pool:</label>
+        <select id="optionFencersInPool" ng-model="numFencersPerPool">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7" selected="selected">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+        <p>{{numFencersPerPool}}</p>
+       </div>
+       
+       <!-- Pool tables -->
+       <div ng-repeat="pool in getPools()">
+            <!-- Individual pools start here -->
+            <h1>Pool {{$index + 1}}</h1>
+            <table cellspacing="0">
+                <!-- Header row -->
+                <tr class="poolHeader">
+                    <td> <!-- Place holder column --></td>
+                    <td>Fencer</td>
+                    <td ng-repeat="bout in pool"> {{$index + 1}} </td>
+                    
+                    <td>V</td>
+                    <td>TS</td>
+                    <td>TR</td>
+                    <td>Ind</td>
+                    <td>P</td>
+                </tr>
+                
+                <!-- Body of the pool table -->
+                <tr ng-repeat="fencer in pool">
+                    <td>{{$index + 1}}</td>
+                    <td>{{fencer.lastName + ", " + fencer.firstName}}</td>
+                    
+                    <!-- Score boxes -->
+                    <td ng-repeat="bout in fencer.bouts" 
+                        class="square {{($index === $parent.$index) ? 'invalid' : ''}}">
+                        <input type="text" 
+                               class="{{($index === $parent.$index) ? 'hide' : ''}}"
+                               ng-model="bout.displayScore"
+                               ng-blur="validateAndUpdateScores($parent.$index, $index, $parent.$parent.$index)"
+                               onclick="this.setSelectionRange(0, this.value.length)">
+                    </td>
+                    
+                    <!-- Fencer stats -->
+                    
+                    <!-- Victories -->
+                    <td class="square">
+                       {{fencer.wins}}
+                    </td>
+                    
+                    <!-- Touches scored -->
+                    <td class="square">
+                       {{fencer.touchesScored}}
+                    </td>
+                    
+                    <!-- Touches received -->
+                    <td class="square">
+                       {{fencer.touchesReceived}}
+                    </td>
+                    
+                    <!-- Indicator -->
+                    <td class="square">
+                       {{fencer.touchesScored - fencer.touchesReceived}}
+                    </td>
+                    
+                    <!-- Place in pool -->
+                    <td class="square">
+                       {{fencerPlace($index,pool)}}
+                    </td>
+                </tr>
+            </table>
+       </div>
+    </div>
+
+
+    <div id="poolFooter">
+        <p><a href="#/pools" class="btn">Generate Direct Elimination Tableau</a></p>
+    </div>
+
+    
+</section>

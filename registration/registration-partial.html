@@ -1,0 +1,44 @@
+<section>
+    <!-- HTML for registration screen -->
+    <div id="fencerInput">
+        
+        <!--Input fencer names-->
+        
+        <label for="fencerFirstName">first name:</label>
+        <input type="text" id="fencerFirstName" ng-model="firstName">
+        
+        <label for="fencerLastName">last name:</label>
+        <input type="text" id="fencerLastName" ng-model="lastName">
+        
+        <label for="fencerRating">rating:</label>
+        <select id="fencerRating" ng-model="rating">
+            <option value="A15">A15</option>
+            <option value="B15">B15</option> 
+            <option value="C15">C15</option> 
+            <option value="D15">D15</option> 
+            <option value="E15">E15</option> 
+            <option value="U">U</option> 
+        </select>
+        
+        <button type="button" 
+                ng-click="addFencerToRegList(firstName, lastName, rating)">
+                Add Fencer
+        </button>
+    </div>
+
+    <div id="fencerRegList">
+        <table>
+          <tr ng-repeat="fencer in getRegList() | orderBy:'rating'">
+            <td> <button> Remove </button></td>
+            <td>{{ fencer.lastName }}, {{ fencer.firstName }}</td>
+            <td>{{ fencer.rating }}</td>
+          </tr>
+        </table>
+    </div>
+
+    <div id="fencerRegFooter">
+        <p><a href="#/pools" class="btn">Create Pools</a></p>
+    </div>
+
+    
+</section>
