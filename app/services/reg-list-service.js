@@ -25,7 +25,8 @@ myApp.service('regListService', function() {
         {firstName: 'first22', lastName: 'last22', rating: 'A13'},
         {firstName: 'first23', lastName: 'last23', rating: 'A13'},
         {firstName: 'first24', lastName: 'last24', rating: 'A13'},
-        {firstName: 'first25', lastName: 'last25', rating: 'A13'}
+        {firstName: 'first25', lastName: 'last25', rating: 'A13'},
+        {firstName: 'first26', lastName: 'last26', rating: 'A13'}
     ];
 
     // Add a fencer to the reg list.
