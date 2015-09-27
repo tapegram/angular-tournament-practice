@@ -139,10 +139,82 @@ myApp.service('poolValidationService', function() {
         currentFencer.setScore(opponentIndex, -1);
         currentFencer.setWon(opponentIndex, false);
     }
+    
+    function fencerPlace(fencerIndex, currentPool) {
+        // Compare this fencer's results to every other fencers results.
+        
+        // Start off in first place (hurray!)
+        var place = 1;
+        
+        // Get current fencer.
+        var thisFencer = currentPool[fencerIndex];
+        
+        // Compare to each other fencer in the pool. Go back one place for every fencer with a better record.
+        for (opponentIndex = 0; opponentIndex < currentPool.length; opponentIndex++) {
+            if (opponentIndex != fencerIndex) {
+                // Get opponent.
+                var opponent = currentPool[opponentIndex];
+                
+                // Compare victories
+                var fencerVictories = thisFencer.wins;
+                var opponentVictories = opponent.wins;
+                
+                if (fencerVictories > opponentVictories) {
+                    // Keep current place.
+                    continue;
+                }
+                
+                if (fencerVictories < opponentVictories) {
+                    // Opponent should place higher. Drop down one.
+                    place++;
+                    continue;
+                }
+                
+                // Tied on victories ==>
+                // Compare indicators
+                var fencerIndicator = thisFencer.touchesScored - thisFencer.touchesReceived;
+                var opponentIndicator = opponent.touchesScored - opponent.touchesReceived;
+                
+                if (fencerIndicator > opponentIndicator) {
+                    // Keep current place.
+                    continue;
+                }
+                
+                if (fencerIndicator < opponentIndicator) {
+                    // Opponent should place higher. Drop down one.
+                    place++;
+                    continue;
+                }
+                
+                
+                // Tied on indicators ==>
+                // Compare touches scored
+                var fencerTouchesScored = thisFencer.touchesScored;
+                var opponentTouchesScored = opponent.touchesScored;
+                
+                if (fencerTouchesScored > opponentTouchesScored) {
+                    // Keep current place.
+                    continue;
+                }
+                
+                if (fencerTouchesScored < opponentTouchesScored) {
+                    // Opponent should place higher. Drop down one.
+                    place++;
+                    continue;
+                }
+                
+                // If we get here, it is a tie!
+                // Keep the same place and move on to looking at the next fencer.
+            }
+        }
+        
+        return place;
+    }
 
     // Make available to controller.
     return {
-        validateAndUpdateScores: validateAndUpdateScores
+        validateAndUpdateScores: validateAndUpdateScores,
+        fencerPlace: fencerPlace
     };
 
 });

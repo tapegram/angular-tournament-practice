@@ -13,6 +13,10 @@ myApp.config(['$routeProvider', function($routeProvider) {
         templateUrl: '../pools/pool-partial.html',
         controller: 'PoolController'
     }).
+    when('/direct_elimination_table', {
+        templateUrl: '../direct-elimination/direct-elimination-partial.html',
+        controller: 'DirectEliminationController'
+    }).
     otherwise({
         redirectTo: '/registration'
     });
