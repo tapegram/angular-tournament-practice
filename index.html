@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Fencing Tournament App</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    
+    <!-- Dependencies -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
+    <script src="js/angular-route.min.js"></script>
+    
+    <!-- App -->
+    <script src="app/app.js"></script>
+    
+    <!-- Services -->
+    <script src="app/services/reg-list-service.js"></script>
+    <script src="pools/services/generate-pool-service.js"></script>
+    <script src="pools/services/pool-validation-service.js"></script>
+    <script src="pools/services/pool-results-service.js"></script>
+    
+    <!-- Controllers -->
+    <script src="registration/registration-controller.js"></script>
+    <script src="pools/pool-controller.js"></script>
+    
+</head>
+<body>
+    <!--Main Div-->
+    <div id="main">
+        <div ng-view></div>
+    </div>
+    
+</body>    
+</html>
