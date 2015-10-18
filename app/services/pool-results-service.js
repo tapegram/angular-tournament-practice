@@ -1,6 +1,10 @@
 myApp.service('poolResultsService', function(generatePoolService,tableSeedingService) {
-    //var DEFencerList = []; // List of DEFencer objects sorted in order of their results in the pool.
-    //var poolFencerList = []; //List of poolFencer objects from the pool. Used to create DEFencerList.
+    var HTMLTable = []; // This is table that will be requested by the HTML to build the view.
+    
+    var getDisplayTable = function() {
+        return HTMLTable;   
+    }
+    
     
     /* Initialization function 
      * This should get the fencers + data from the generatePoolService and then do all the work necessary
@@ -29,15 +33,15 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
     
         
         // Finally, we create the array that will be used to generate the HTML to display the tableau.
-        var HTMLTable = generateHTMLTable(boutTree);
+        HTMLTable = generateHTMLTable(boutTree, DEFencersList);
 
     }
     
     //====================================================
-    // BELOW: FUNCTIONS FOR GENERATING THE BOUT TREE
+    // BELOW: FUNCTIONS FOR GENERATING THE HTML TABLE
     //====================================================
     
-    function generateHTMLTable(boutTree) {
+    function generateHTMLTable(boutTree, DEFencersList) {
         // First get the number of rows we need for the DE table, which is just numFencers - 1.
         // The rows look like the following
         
@@ -51,13 +55,48 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
         Fencer4    Space         Space
         */
         
-        var numRows = (boutTree[0].length * 2) - 1;
+        var numRows = (boutTree[0].length * 4) - 1; // Bouts * 2 = # fencers. * 2 - 1 = num rows.
         var numRounds = boutTree.length;
         
         
         // Each row will have exactly one fencer/bout.
         // We will create an array that maps row -> round
         var mapRowToRound = getMapRowToRound(numRows,numRounds);
+        
+        // For each row, create a DETableRow.
+        // The DETableRow holds an array of cells which can be used in the
+        // HTML to display the content.
+        
+        // We will use the boutIndexHelper to get the correct bout into the row.
+        var boutHelper = new boutIndexHelper(numRounds);
+        
+        // Array we are building to return.
+        var displayTable = [];
+        
+        for (var row = 0; row < numRows; row++) {
+            
+            // Get the round where a fencer will be displayed.
+            var activeRound = mapRowToRound[row];
+            
+            // Get the bout this fencer is a part of.
+            var boutIndex = boutHelper.getBoutIndexForRound(activeRound);
+            
+            var bout = boutTree[activeRound][boutIndex];
+            
+            // Get a flag indicating if this fencer is above their opponent.
+            var isFencerTop = boutHelper.isFencerTop(activeRound);
+            
+            // Increment the bout index for the next iteration of this loop.
+            boutHelper.incrementBoutIndexForRound(activeRound);
+            
+            // Create the new row.
+            var tableRow = new DETableRow(activeRound, bout, isFencerTop, numRounds);
+            
+            // Add the row to our table.
+            displayTable.push(tableRow);      
+        }
+        
+        return displayTable;
     }
     
     function getMapRowToRound(numRows, numRounds) {
@@ -84,11 +123,13 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
             }
         }
         
+        return map;
+        
     }
     
     
     //====================================================
-    // ABOVE: FUNCTIONS FOR GENERATING THE BOUT TREE
+    // ABOVE: FUNCTIONS FOR GENERATING THE HTML TABLE
     //====================================================
     
     //====================================================
@@ -111,14 +152,17 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
             
             // Add an empty array to hold the bouts in this round.
             boutTree[i] = [];
-                
+            
+            // We update the parent bout index for every 2 bouts in this round. Keep track of this with a flag.
+            //var useNextParentBout = true;
+            
             // For each bout in round...
             for (var j=0; j<boutsInRound; j++) {
                 
                 if (i == numRounds-1) {
                     // This is the final bout. It has no parents.
                     // This around is just the one bout.
-                    boutTree[numRounds-1].push(new DEBout());
+                    boutTree[numRounds-1].push(new DEBout(null, false, "final"));
                     
                     continue; // go to next round.
                 }
@@ -129,15 +173,16 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
                 // Every even (j) bouts points to the top of the bout in the next round,
                 // and the odd bouts point to the bottom.
                 
-                var parentBoutIndex = j - (j % 2); // If odd, subtract one.
+                var parentBoutIndex = Math.floor(j / 2); // 2-1 mapping of bouts from one round to the next.
+                
                 var isTopOfParentBout = 0 == (j % 2); // If this bout is even (j).
                 
                 var parentBout = boutTree[i+1][parentBoutIndex];
                 
-                var newBout = new DEBout(parentBout, isTopOfParentBout);
+                var newBout = new DEBout(parentBout, isTopOfParentBout, j + "^" + i);
                 
                 // Add it to the round.
-                boutTree[i].push(newBout);    
+                boutTree[i].push(newBout); 
             }
             
             boutsInRound *= 2; // Doubles each round back. Round of 16 -> 8 -> Semis -> final.
@@ -163,6 +208,16 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
             bout.setFencerTop(fencerTop);
             bout.setFencerBottom(fencerBottom);
         }
+        
+        // Finally, add a dummy bout at the very end we can use to display the winner.
+        var dummyBout = new DEBout();
+        
+        // Hook it up to the final bout.
+        boutTree[boutTree.length - 1][0].parentBout = dummyBout;
+        
+        // Add to the tree.
+        boutTree[boutTree.length]=[dummyBout];
+        
         
         // Done.
         return boutTree;
@@ -278,8 +333,9 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
             var firstName = rankedPoolFencersList[i].firstName;
             var lastName = rankedPoolFencersList[i].lastName;
             var rating = rankedPoolFencersList[i].rating;
+            var seed = i + 1;
             
-            var newDEFencer = new DEFencer(firstName, lastName, rating, false);
+            var newDEFencer = new DEFencer(firstName, lastName, rating, false, seed);
             
             rankedDEFencersList.push(newDEFencer);
         }
@@ -300,7 +356,9 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
         // objects) to our DEFencerList. We will need to convert these objects to DEFencer objects as well.
         
         var sortedFencerList = [];
-        for (var winPercentage in sortedKeys) {
+        for (var i = 0; i < sortedKeys.length; i++) {
+            var winPercentage = sortedKeys[i];
+            
             // Append values from each bucket to our sorted list.
             sortedFencerList.push.apply(sortedFencerList, winPercentageBuckets[winPercentage]);
         }
@@ -446,7 +504,7 @@ myApp.service('poolResultsService', function(generatePoolService,tableSeedingSer
     
     // Make above functions available to other controllers.
     return {
-        
+        getDisplayTable: getDisplayTable
     };
 
 });

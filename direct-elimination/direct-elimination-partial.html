@@ -1,12 +1,21 @@
 <!-- HTML for registration screen -->
-<section id="tableauScreen">
-   <p>Test</p>
-    <!-- DE table is actually a table -->
-    <table>
-        <!-- For each fencer, create a row in the table. This will need to include Byes as well. -->
-        
-        
-    </table>
-    
+<section>
+   <div id="tableauScreen">
+        <!-- DE table is actually a table -->
+        <table>
+            <tr ng-repeat="row in getDisplayTable()">
+                <td ng-repeat="cell in row.getCells()" 
+                    ng-class="{'defencer': !cell.isBlank(), 'hasrightborder': cellHasRightBorder($index, $parent.$index)}">
+                    {{(cell.isBlank()) ? '' : cell.fencerName}}
+                    <input type="text"
+                           ng-show="cell.boutReady()" 
+                           ng-model="cell.displayScore"
+                           ng-blur="cell.validateScore()"
+                           onclick="this.setSelectionRange(0, this.value.length)"
+                           class="DEScoreInput">
+                </td>
+            </tr>
+        </table>
+    </div>
     
 </section>
